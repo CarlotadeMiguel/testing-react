@@ -1,11 +1,15 @@
-
-  module.exports = {
-    testEnvironment: 'jsdom',
-    setupFilesAfterEnv: ['<rootDir>/src/tests/setup.js'],
+module.exports = {
+    testEnvironment: 'jest-fixed-jsdom',
+    setupFiles: ['<rootDir>/jest.polyfills.js'],
+    setupFilesAfterEnv: ['<rootDir>/src/tests/setup.js'], 
+    transform: {
+      '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
+    },
     moduleNameMapper: {
       '\\.(css|less|scss)$': 'identity-obj-proxy',
     },
-    transform: {
-      '^.+\\.(js|jsx)$': 'babel-jest',
-    },
+    transformIgnorePatterns: [
+      '/node_modules/(?!msw|other-libraries-you-need-to-transform)/',
+    ], 
   };
+  
