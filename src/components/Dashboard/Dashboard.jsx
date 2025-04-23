@@ -1,6 +1,6 @@
-// src/components/Dashboard.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import './Dashboard.css';
 
 function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
@@ -9,35 +9,31 @@ function Dashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token'); // Verificamos si existe el token
+    const token = localStorage.getItem('token');
 
     if (!token) {
-      // Si no hay token, redirige al login
       navigate('/login');
       return;
     }
 
-    // Si hay token, hacemos la solicitud para obtener los datos del usuario
     const fetchUserData = async () => {
       try {
         const response = await fetch('/api/profile', {
           headers: {
-            Authorization: `Bearer ${token}`, // Usamos el token en la cabecera
+            Authorization: `Bearer ${token}`,
           },
         });
 
         const data = await response.json();
 
         if (!response.ok) {
-          // Si hay error al obtener los datos, redirige al login
           setError(data.message || 'No autorizado');
           navigate('/login');
         } else {
           setUserData(data);
         }
       } catch (err) {
-        setError('Error al obtener los datos del usuario');
-        navigate('/login');
+        setError('Error de red');
       } finally {
         setIsLoading(false);
       }
@@ -47,24 +43,26 @@ function Dashboard() {
   }, [navigate]);
 
   if (isLoading) {
-    return <p>Cargando...</p>; // Mientras se verifica el token
+    return <div className="dashboard-loading">Cargando...</div>;
   }
 
   if (error) {
-    return <p className="error">{error}</p>; // Si hubo algún error
+    return <div className="dashboard-error">{error}</div>;
   }
 
   return (
-    <div>
-      <h2>Bienvenido, {userData?.name}!</h2>
-      <p>Email: {userData?.email}</p>
-      <button onClick={() => {
-        // Eliminar el token de localStorage y redirigir al login
-        localStorage.removeItem('token');
-        navigate('/login');
-      }}>
-        Cerrar sesión
-      </button>
+    <div className="dashboard-container">
+      <div className="dashboard-header">
+        <h1>Bienvenido al Dashboard</h1>
+      </div>
+      <div className="dashboard-content">
+        {userData && (
+          <div className="dashboard-user-info">
+            <p><strong>Nombre:</strong> {userData.name}</p>
+            <p><strong>Email:</strong> {userData.email}</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
