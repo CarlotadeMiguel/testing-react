@@ -30,5 +30,10 @@
     "jest": "^29.7.0",
     "msw": "^2.7.5",
     "vite": "^6.3.1"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
   }
 }
