@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+import './LogingForm.css';
+
 function validateEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
@@ -13,6 +15,7 @@ export default function LoginForm() {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,7 +47,8 @@ export default function LoginForm() {
       if (!res.ok) {
         setErrors({ general: data.message || 'Error en el login' });
       } else {
-        console.log('✅ Login exitoso:', data);
+        localStorage.setItem('token', data.token);
+        navigate('/dashboard');
       }
     } catch (err) {
       setErrors({ general: 'Error de red' });
@@ -54,13 +58,13 @@ export default function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ maxWidth: '400px', margin: 'auto' }}>
+    <form className="login-form" onSubmit={handleSubmit}>
       <h2>Iniciar Sesión</h2>
 
       {errors.general && <p className="error">{errors.general}</p>}
 
-      <div>
-        <label>Email:</label><br />
+      <div className="form-group">
+        <label>Email:</label>
         <input
           type="email"
           value={email}
@@ -70,8 +74,8 @@ export default function LoginForm() {
         {errors.email && <p className="error">{errors.email}</p>}
       </div>
 
-      <div style={{ marginTop: '10px' }}>
-        <label>Contraseña:</label><br />
+      <div className="form-group">
+        <label>Contraseña:</label>
         <input
           type="password"
           value={password}
@@ -81,7 +85,7 @@ export default function LoginForm() {
         {errors.password && <p className="error">{errors.password}</p>}
       </div>
 
-      <button type="submit" disabled={isLoading} style={{ marginTop: '20px' }}>
+      <button type="submit" disabled={isLoading}>
         {isLoading ? 'Cargando...' : 'Iniciar sesión'}
       </button>
     </form>
