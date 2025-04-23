@@ -1,7 +1,10 @@
 import '@testing-library/jest-dom';
-import { beforeAll, afterEach, afterAll } from '@jest/globals';
-import { server } from './mocks/server';
+import { worker } from './../mocks/browser';
+import { TextEncoder, TextDecoder } from 'util';
 
-beforeAll(() => server.listen());
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
+
+beforeAll(() => worker.listen());
+afterEach(() => worker.resetHandlers());
+afterAll(() => worker.close());
