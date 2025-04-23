@@ -1,93 +1,100 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './LogingForm.css';
 
-function validateEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function validatePassword(password) {
-  return password.length >= 8;
-}
-
-export default function LoginForm() {
+const LoginForm = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const validateEmail = (email) => {
+    const emailPattern = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
+    return emailPattern.test(email);
+  };
 
-    const validationErrors = {};
-    if (!email) validationErrors.email = 'El email es obligatorio';
-    else if (!validateEmail(email)) validationErrors.email = 'Email inválido';
-
-    if (!password) validationErrors.password = 'La contraseña es obligatoria';
-    else if (!validatePassword(password)) validationErrors.password = 'Debe tener al menos 8 caracteres';
-
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const newErrors = {};
+  
+    if (!email) {
+      newErrors.email = 'El email es obligatorio';
+    } else if (!validateEmail(email)) {
+      newErrors.email = 'Email inválido';
+    }
+  
+    if (!password) {
+      newErrors.password = 'La contraseña es obligatoria';
+    } else if (password.length < 8) {
+      newErrors.password = 'La contraseña debe tener al menos 8 caracteres';
+    }
+  
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
-
+  
     setErrors({});
-    setIsLoading(true);
-
+    setLoading(true);
     try {
-      const res = await fetch('/api/login', {
+      const response = await fetch('/api/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
+        headers: { 'Content-Type': 'application/json' },
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setErrors({ general: data.message || 'Error en el login' });
-      } else {
+      if (response.ok) {
+        const data = await response.json();
         localStorage.setItem('token', data.token);
         navigate('/dashboard');
+      } else {
+        const errorData = await response.json();
+        setErrors((prevErrors) => ({ ...prevErrors, credentials: errorData.message || 'Error desconocido' }));
       }
-    } catch (err) {
-      setErrors({ general: 'Error de red' });
+    } catch (error) {
+      setErrors((prevErrors) => ({ ...prevErrors, network: 'Error de red' }));
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <form className="login-form" onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="login-form">
       <h2>Iniciar Sesión</h2>
 
-      {errors.general && <p className="error">{errors.general}</p>}
-
       <div className="form-group">
-        <label>Email:</label>
+        <label htmlFor="email">Email:</label>
         <input
+          id="email"
           type="email"
+          placeholder="ejemplo@correo.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="ejemplo@correo.com"
         />
         {errors.email && <p className="error">{errors.email}</p>}
       </div>
 
       <div className="form-group">
-        <label>Contraseña:</label>
+        <label htmlFor="password">Contraseña:</label>
         <input
+          id="password"
           type="password"
+          placeholder="********"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="********"
         />
         {errors.password && <p className="error">{errors.password}</p>}
       </div>
 
-      <button type="submit" disabled={isLoading}>
-        {isLoading ? 'Cargando...' : 'Iniciar sesión'}
+      {errors.credentials && <p className="error">{errors.credentials}</p>}
+      {errors.network && <p className="error">{errors.network}</p>}
+
+      <button type="submit" disabled={loading}>
+        {loading ? 'Cargando...' : 'Iniciar sesión'}
       </button>
     </form>
   );
-}
+};
+
+export default LoginForm;
