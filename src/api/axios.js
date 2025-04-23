@@ -1,42 +1,23 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api' // Puedes cambiar esto si usas una URL real
+  baseURL: '/api'
 });
 
-// 👉 Interceptor de Request
-api.interceptors.request.use(
-  (config) => {
-    // Simula que tienes un token (puedes reemplazar esto con uno real)
-    const token = localStorage.getItem('token');
-    
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    
-    return config;
-  },
-  (error) => {
-    console.error('Error en el request:', error);
-    return Promise.reject(error);
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-);
+  return config;
+}, error => Promise.reject(error));
 
-// 👉 Interceptor de Response
 api.interceptors.response.use(
-  (response) => {
-    // Puedes modificar la respuesta si necesitas
-    return response;
-  },
-  (error) => {
-    console.error('Error en la respuesta:', error);
-
-    // Por ejemplo, si no estás autorizado
-    if (error.response && error.response.status === 401) {
-      alert("No estás autorizado. Redirigiendo a login...");
-      // window.location.href = '/login'; // opcional
+  response => response,
+  error => {
+    if (error.response?.status === 401) {
+      window.location.href = '/login';
     }
-
     return Promise.reject(error);
   }
 );

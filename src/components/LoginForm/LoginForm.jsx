@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../api/axios';
 import './LoginForm.css';
 
 const LoginForm = () => {
@@ -38,22 +39,19 @@ const LoginForm = () => {
     setErrors({});
     setLoading(true);
     try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('token', data.token);
-        navigate('/dashboard');
-      } else {
-        const errorData = await response.json();
-        setErrors((prevErrors) => ({ ...prevErrors, credentials: errorData.message || 'Error desconocido' }));
-      }
+      const response = await api.post('/login', { email, password });
+    
+      localStorage.setItem('token', response.data.token);
+      navigate('/dashboard');
     } catch (error) {
-      setErrors((prevErrors) => ({ ...prevErrors, network: 'Error de red' }));
+      if (error.response) {
+        // Error de servidor (4xx/5xx)
+        const errorData = error.response.data;
+        setErrors(prev => ({ ...prev, credentials: errorData.message || 'Error desconocido' }));
+      } else {
+        // Error de red
+        setErrors(prev => ({ ...prev, network: 'Error de red' }));
+      }
     } finally {
       setLoading(false);
     }

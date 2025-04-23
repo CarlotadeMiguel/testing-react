@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../api/axios';
 import './Dashboard.css';
 
 function Dashboard() {
@@ -18,22 +19,14 @@ function Dashboard() {
 
     const fetchUserData = async () => {
       try {
-        const response = await fetch('/api/profile', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          setError(data.message || 'No autorizado');
-          navigate('/login');
+        const response = await api.get('/profile');
+        setUserData(response.data);
+      } catch (error) {
+        if (error.response?.status === 401) {
+          navigate('/login'); // Opcional (el interceptor ya redirige)
         } else {
-          setUserData(data);
+          setError(error.response?.data?.message || 'Error de red');
         }
-      } catch (err) {
-        setError('Error de red');
       } finally {
         setIsLoading(false);
       }
