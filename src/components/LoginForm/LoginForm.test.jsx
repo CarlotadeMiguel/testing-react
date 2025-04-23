@@ -4,12 +4,12 @@ import LoginForm from './LoginForm';
 import { BrowserRouter } from 'react-router-dom';
 
 // Mock de useNavigate
-const mockedNavigate = vi.fn();
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom');
+const mockedNavigate = jest.fn(); 
+jest.mock('react-router-dom', async () => { 
+  const actual = await jest.importActual('react-router-dom');
   return {
     ...actual,
-    useNavigate: () => mockedNavigate,
+    useNavigate: mockedNavigate, // Usa mockedNavigate aquí
   };
 });
 
