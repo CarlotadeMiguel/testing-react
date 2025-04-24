@@ -23,7 +23,7 @@ function Dashboard() {
         setUserData(response.data);
       } catch (error) {
         if (error.response?.status === 401) {
-          navigate('/login'); // Opcional (el interceptor ya redirige)
+          navigate('/login');
         } else {
           setError(error.response?.data?.message || 'Error de red');
         }
