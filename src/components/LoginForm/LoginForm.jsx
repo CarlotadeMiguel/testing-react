@@ -56,7 +56,6 @@ const LoginForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="login-form">
-      {authError && <div className="error">{authError}</div>}
       <div>
         <label>Email</label>
         <input
