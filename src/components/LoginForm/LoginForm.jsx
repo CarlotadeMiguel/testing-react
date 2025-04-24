@@ -5,52 +5,49 @@ import './LoginForm.css';
 
 const LoginForm = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [form, setForm] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
-  const validateEmail = (email) => {
-    const emailPattern = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
-    return emailPattern.test(email);
-  };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const validate = () => {
     const newErrors = {};
-  
-    if (!email) {
+    if (!form.email) {
       newErrors.email = 'El email es obligatorio';
-    } else if (!validateEmail(email)) {
+    } else if (!/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i.test(form.email)) {
       newErrors.email = 'Email inválido';
     }
-  
-    if (!password) {
+    if (!form.password) {
       newErrors.password = 'La contraseña es obligatoria';
-    } else if (password.length < 8) {
+    } else if (form.password.length < 8) {
       newErrors.password = 'La contraseña debe tener al menos 8 caracteres';
     }
-  
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    return newErrors;
+  };
+
+  const handleChange = e => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    setErrors({ ...errors, [e.target.name]: undefined });
+  };
+
+  const handleSubmit = async e => {
+    e.preventDefault();
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length) {
+      setErrors(validationErrors);
       return;
     }
-  
-    setErrors({});
     setLoading(true);
+    setErrors({});
     try {
-      const response = await api.post('/login', { email, password });
-    
-      localStorage.setItem('token', response.data.token);
+      const { data } = await api.post('/login', form);
+      localStorage.setItem('token', data.token);
       navigate('/dashboard');
     } catch (error) {
-      if (error.response) {
-        // Error de servidor (4xx/5xx)
-        const errorData = error.response.data;
-        setErrors(prev => ({ ...prev, credentials: errorData.message || 'Error desconocido' }));
+      if (error.response?.data?.message) {
+        setErrors({ credentials: error.response.data.message });
       } else {
-        // Error de red
-        setErrors(prev => ({ ...prev, network: 'Error de red' }));
+        setErrors({ network: 'Error de red' });
       }
     } finally {
       setLoading(false);
@@ -59,35 +56,31 @@ const LoginForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="login-form">
-      <h2>Iniciar Sesión</h2>
-
-      <div className="form-group">
-        <label htmlFor="email">Email:</label>
+      {authError && <div className="error">{authError}</div>}
+      <div>
+        <label>Email</label>
         <input
-          id="email"
+          name="email"
           type="email"
-          placeholder="ejemplo@correo.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={form.email}
+          onChange={handleChange}
+          disabled={loading}
         />
-        {errors.email && <p className="error">{errors.email}</p>}
+        {errors.email && <div className="error">{errors.email}</div>}
       </div>
-
-      <div className="form-group">
-        <label htmlFor="password">Contraseña:</label>
+      <div>
+        <label>Contraseña</label>
         <input
-          id="password"
+          name="password"
           type="password"
-          placeholder="********"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          value={form.password}
+          onChange={handleChange}
+          disabled={loading}
         />
-        {errors.password && <p className="error">{errors.password}</p>}
+        {errors.password && <div className="error">{errors.password}</div>}
       </div>
-
-      {errors.credentials && <p className="error">{errors.credentials}</p>}
-      {errors.network && <p className="error">{errors.network}</p>}
-
+      {errors.credentials && <div className="error">{errors.credentials}</div>}
+      {errors.network && <div className="error">{errors.network}</div>}
       <button type="submit" disabled={loading}>
         {loading ? 'Cargando...' : 'Iniciar sesión'}
       </button>

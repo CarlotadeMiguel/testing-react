@@ -4,23 +4,21 @@ import api from '../../api/axios';
 import './Dashboard.css';
 
 function Dashboard() {
-  const [isLoading, setIsLoading] = useState(true);
   const [userData, setUserData] = useState(null);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-
     if (!token) {
       navigate('/login');
       return;
     }
-
     const fetchUserData = async () => {
       try {
-        const response = await api.get('/profile');
-        setUserData(response.data);
+        const { data } = await api.get('/profile');
+        setUserData(data);
       } catch (error) {
         if (error.response?.status === 401) {
           navigate('/login');
@@ -31,17 +29,12 @@ function Dashboard() {
         setIsLoading(false);
       }
     };
-
     fetchUserData();
   }, [navigate]);
 
-  if (isLoading) {
-    return <div className="dashboard-loading">Cargando...</div>;
-  }
-
-  if (error) {
-    return <div className="dashboard-error">{error}</div>;
-  }
+  if (isLoading) return <div className="dashboard-loading">Cargando...</div>;
+  if (error) return <div className="dashboard-error">{error}</div>;
+  if (!userData) return null;
 
   return (
     <div className="dashboard-container">
