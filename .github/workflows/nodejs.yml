@@ -47,6 +47,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y google-chrome-stable
       - name: Lanza la app en background
-        run: npm run start &
+        run: npm run dev &
       - name: Test E2E con Selenium
         run: node e2e/selenium.e2e.test.js
