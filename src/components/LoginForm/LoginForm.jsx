@@ -9,7 +9,6 @@ const LoginForm = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
-
   const validate = () => {
     const newErrors = {};
     if (!form.email) {
@@ -55,35 +54,40 @@ const LoginForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="login-form">
-      <div>
-        <label>Email</label>
-        <input
-          name="email"
-          type="email"
-          value={form.email}
-          onChange={handleChange}
-          disabled={loading}
-        />
-        {errors.email && <div className="error">{errors.email}</div>}
-      </div>
-      <div>
-        <label>Contraseña</label>
-        <input
-          name="password"
-          type="password"
-          value={form.password}
-          onChange={handleChange}
-          disabled={loading}
-        />
-        {errors.password && <div className="error">{errors.password}</div>}
-      </div>
-      {errors.credentials && <div className="error">{errors.credentials}</div>}
-      {errors.network && <div className="error">{errors.network}</div>}
-      <button type="submit" disabled={loading}>
-        {loading ? 'Cargando...' : 'Iniciar sesión'}
-      </button>
-    </form>
+    <div>
+      <h1>Iniciar sesión</h1>
+      <form className="login-form" onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="email">Email</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            value={form.email}
+            onChange={handleChange}
+            disabled={loading}
+          />
+          {errors.email && <div className="error">{errors.email}</div>}
+        </div>
+        <div>
+          <label htmlFor="password">Contraseña</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            value={form.password}
+            onChange={handleChange}
+            disabled={loading}
+          />
+          {errors.password && <div className="error">{errors.password}</div>}
+        </div>
+        {errors.credentials && <div className="error">{errors.credentials}</div>}
+        {errors.network && <div className="error">{errors.network}</div>}
+        <button type="submit" disabled={loading}>
+          {loading ? 'Cargando...' : 'Iniciar sesión'}
+        </button>
+      </form>
+    </div>
   );
 };
 
