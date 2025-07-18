@@ -8,19 +8,45 @@ on:
 
 jobs:
   build:
-
     runs-on: [self-hosted, Linux, X64]
-
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    - run: npm run build --if-present
-    - run: npm test
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build --if-present
+
+  test:
+    runs-on: [self-hosted, Linux, X64]
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+      - run: npm ci
+      - run: npm test
+
+  e2e:
+    runs-on: [self-hosted, linux, x64]
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instala dependencias
+        run: npm ci
+      - name: Instala Chrome (para Selenium)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+      - name: Lanza la app en background
+        run: npm run start &
+      - name: Test E2E con Selenium
+        run: node e2e/selenium.e2e.test.js
