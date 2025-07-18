@@ -50,3 +50,20 @@ jobs:
         run: npm run dev &
       - name: Test E2E con Selenium
         run: node e2e/selenium.e2e.test.js
+  
+  deploy:
+    runs-on: [self-hosted, linux, x64]
+    needs: [test, build, e2e]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instala dependencias y build
+        run: |
+          npm ci
+          npm run build
+      - name: Copia el build al directorio público de Nginx
+        run: |
+          sudo rm -rf /var/www/my-react-app/*
+          sudo cp -r build/* /var/www/my-react-app/
+      - name: Reinicia nginx (si es necesario)
+        run: sudo systemctl reload nginx
+
