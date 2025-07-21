@@ -35,16 +35,3 @@ export const handlers = [
     return Response.json({ message: 'No autorizado' }, { status: 401 });
   })
 ];
-
-import { server } from '../mocks/server'
-
-beforeAll(() => server.listen({
-  onUnhandledRequest: (req) => {
-    // Ignora peticiones de WebDriver (Selenium)
-    if (req.url.toString().includes('127.0.0.1') || req.url.toString().includes('localhost')) {
-      return;
-    }
-    // Log otros requests no manejados
-    console.warn('Found an unhandled %s request to %s', req.method, req.url);
-  }
-}));

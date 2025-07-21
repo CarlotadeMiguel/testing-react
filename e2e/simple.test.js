@@ -7,20 +7,15 @@ describe('Ejemplo simple de Selenium con Jest', () => {
 
   beforeAll(async () => {
     const service = new chrome.ServiceBuilder(chromedriver.path);
-    const options = new chrome.Options();
-    
+    const args = ['--window-size=1920,1080']
     // Configuración específica para CI vs local
-    if (process.env.CI === 'true') {
-      options.addArguments('--headless');
-      options.addArguments('--no-sandbox');
-      options.addArguments('--disable-dev-shm-usage');
-      options.addArguments('--disable-gpu');
-      options.addArguments('--window-size=1920,1080');
+    if (process.env.CI || process.platform !== 'win32') {
+      args.push('--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-gpu')
     } else {
-      // Directorio único para evitar conflictos locales
-      options.addArguments(`--user-data-dir=./chrome-user-data-${Date.now()}`);
+      // local Windows
+      args.push('--headless=new','--disable-gpu')
     }
-    
+    const options = new chrome.Options().addArguments(...args)
     driver = await new Builder()
       .forBrowser('chrome')
       .setChromeOptions(options)

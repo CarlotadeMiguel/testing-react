@@ -6,7 +6,7 @@ const { BroadcastChannel } = require('worker_threads');
 global.BroadcastChannel = BroadcastChannel;
 
 import '@testing-library/jest-dom';
-import { server } from '../mocks/server'
+import { server } from './server'
 
 // Configuración MSW que ignora peticiones de Selenium
 beforeAll(() => server.listen({

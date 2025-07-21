@@ -28,6 +28,13 @@ async function runE2ETests(testFile) {
   let serverProcess = null;
   
   try {
+    // Limpieza de procesos previos
+    if (process.platform === 'win32') {
+      exec('taskkill /im chrome.exe /f', () => {});
+    } else {
+      exec('pkill -f [c]hromedriver', () => {});
+    }
+
     // Verificar si el servidor ya está corriendo
     console.log(`Verificando si el servidor está corriendo en ${SERVER_URL}...`);
     const isRunning = await isServerRunning(SERVER_URL);
