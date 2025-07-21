@@ -33,50 +33,34 @@ jobs:
           node-version: 20.x
           cache: 'npm'
       - run: npm ci
-      - run: npm test
+      - run: npm test -- --testPathIgnorePatterns=e2e/
 
   e2e:
-  runs-on: [self-hosted, linux, x64]
-  needs: test
-  steps:
-    - uses: actions/checkout@v4
-    - name: Instala dependencias
-      run: npm ci
-    - name: Instala Chrome (para Selenium)
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y google-chrome-stable
-    - name: Lanza la app en background
-      run: npm run dev &
-    - name: Espera a que Vite esté listo
-      run: |
-        for i in {1..30}; do
-          if curl -s --head http://localhost:5173/ | grep "200 OK" > /dev/null; then
-            echo "Vite está levantado."
-            exit 0
-          fi
-          sleep 2
-        done
-        echo "Vite no arrancó tras 60 segundos."
-        exit 1
-    - name: Test E2E con Selenium
-      run: npm test -- e2e/
-      env:
-        CI: true
-  
-  deploy:
     runs-on: [self-hosted, linux, x64]
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instala dependencias
+        run: npm ci
+      - name: Instala Chrome (para Selenium)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+      - name: Test E2E con script personalizado
+        run: npm run test:e2e
+        env:
+          CI: true
+
+  deploy:
+    runs-on: [self-hosted, Linux, X64]
     needs: [test, build, e2e]
     steps:
       - uses: actions/checkout@v4
-      - name: Instala dependencias y build
-        run: |
-          npm ci
-          npm run build
+      - run: npm ci
+      - run: npm run build
       - name: Copia el build al directorio público de Nginx
         run: |
           sudo rm -rf /var/www/my-react-app/*
-          sudo cp -r build/* /var/www/my-react-app/
-      - name: Reinicia nginx (si es necesario)
+          sudo cp -r dist/* /var/www/my-react-app/
+      - name: Reinicia nginx
         run: sudo systemctl reload nginx
-
