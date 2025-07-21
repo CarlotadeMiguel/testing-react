@@ -40,14 +40,32 @@ jobs:
     needs: test
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20.x, cache: 'npm' }
+
       - name: Instala dependencias
         run: npm ci
       - name: Instala Chrome (para Selenium)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
-      - name: Test E2E con script personalizado
-        run: npm run test:e2e
+          sudo yum update -y
+          sudo yum install -y google-chrome-stable
+
+      # --- Levanta Vite y espera ---
+      - name: Arranca Vite en background
+        run: npm run dev -- --host &
+      
+      - name: Espera a que Vite responda
+        run: |
+          for i in {1..30}; do
+            if curl -s --head http://localhost:5173 | grep "200 OK" > /dev/null; then
+              echo "Vite está listo"; exit 0; fi
+            sleep 2
+          done
+          echo "Vite no respondió en 60 s"; exit 1
+
+      # --- Ejecuta tests E2E ---
+      - name: Ejecuta Selenium (E2E)
+        run: npm test -- e2e/
         env:
           CI: true
 
