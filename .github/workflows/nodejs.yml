@@ -36,20 +36,33 @@ jobs:
       - run: npm test
 
   e2e:
-    runs-on: [self-hosted, linux, x64]
-    needs: test
-    steps:
-      - uses: actions/checkout@v4
-      - name: Instala dependencias
-        run: npm ci
-      - name: Instala Chrome (para Selenium)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
-      - name: Lanza la app en background
-        run: npm run dev &
-      - name: Test E2E con Selenium
-        run: node e2e/selenium.e2e.test.js
+  runs-on: [self-hosted, linux, x64]
+  needs: test
+  steps:
+    - uses: actions/checkout@v4
+    - name: Instala dependencias
+      run: npm ci
+    - name: Instala Chrome (para Selenium)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+    - name: Lanza la app en background
+      run: npm run dev &
+    - name: Espera a que Vite esté listo
+      run: |
+        for i in {1..30}; do
+          if curl -s --head http://localhost:5173/ | grep "200 OK" > /dev/null; then
+            echo "Vite está levantado."
+            exit 0
+          fi
+          sleep 2
+        done
+        echo "Vite no arrancó tras 60 segundos."
+        exit 1
+    - name: Test E2E con Selenium
+      run: npm test -- e2e/
+      env:
+        CI: true
   
   deploy:
     runs-on: [self-hosted, linux, x64]
